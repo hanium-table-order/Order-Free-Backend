@@ -1,20 +1,19 @@
-package com.example.tableorder.entity.category;
+package com.example.tableorder.entity.menu;
 
-import com.example.tableorder.entity.store.Store;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-@Entity @Table(name = "category")
-public class Category {
+@Entity @Table(name = "menu_option")
+public class MenuOption {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;                               // bigint PK
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;                           // FK -> store.id
+    @JoinColumn(name = "menu_item_id", nullable = false)
+    private MenuItem menuItem;
 
     @Column(name = "name_ko", nullable = false)
     private String nameKo;
@@ -27,5 +26,10 @@ public class Category {
 
     @Column(name = "name_ja")
     private String nameJa;
-}
 
+    @Column(name = "extra_price", nullable = false)
+    private Integer extraPrice;
+
+    @Column(nullable = false)
+    private Boolean required;
+}
