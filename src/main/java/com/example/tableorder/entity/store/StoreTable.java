@@ -3,8 +3,7 @@ package com.example.tableorder.entity.store;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 @Entity @Table(name = "store_table")
 public class StoreTable {
 
@@ -15,6 +14,12 @@ public class StoreTable {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
+    @Column(name = "table_number", nullable = false)
+    private Integer tableNumber;
+
+    @Column(nullable = false)
+    private String status; //Empty/Occupied/Paying
+
     @Column(name = "position_x")
     private Integer positionX;
 
@@ -22,5 +27,6 @@ public class StoreTable {
     private Integer positionY;
 
     private Integer seats;
+
 }
 

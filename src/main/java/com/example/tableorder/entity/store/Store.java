@@ -17,5 +17,8 @@ public class Store {
     private String name;
     private String address;
     private String hours;
+
+    @Column(name = "floorplan_url")
+    private String floorplanUrl;
 }
 
