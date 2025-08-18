@@ -54,4 +54,7 @@ public class MenuItem {
 
     @Column(name = "enable_inventory", nullable = false)
     private Boolean enableInventory;
+
+    @Column(name = "prep_time_min", nullable = false)
+    private Integer prepTimeMin;
 }
