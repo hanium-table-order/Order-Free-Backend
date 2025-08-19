@@ -4,44 +4,25 @@ import com.example.tableorder.entity.category.Category;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
 @Entity @Table(name = "menu_item")
 public class MenuItem {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "name_ko", nullable = false)
-    private String nameKo;
-
-    @Column(name = "name_en")
-    private String nameEn;
-
-    @Column(name = "name_zh")
-    private String nameZh;
-
-    @Column(name = "name_ja")
-    private String nameJa;
-
     @Column(nullable = false)
     private Integer price;
 
-    @Lob @Column(name = "description_ko")
-    private String descriptionKo;
-
-    @Lob @Column(name = "description_en")
-    private String descriptionEn;
-
-    @Lob @Column(name = "description_zh")
-    private String descriptionZh;
-
-    @Lob @Column(name = "description_ja")
-    private String descriptionJa;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -57,4 +38,10 @@ public class MenuItem {
 
     @Column(name = "prep_time_min", nullable = false)
     private Integer prepTimeMin;
+
+    @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MenuItemI18n> translations = new ArrayList<>();
+
+
 }

@@ -25,4 +25,7 @@ public class OrderItem {
 
     @Column(name = "unit_price", nullable = false)
     private Integer unitPrice;
+
+    @Column(name = "menu_name", nullable = false, length = 255) // 👈 추가됨
+    private String menuName;
 }

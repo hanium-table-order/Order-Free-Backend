@@ -19,4 +19,10 @@ public class OrderItemOption {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "option_id", nullable = false)
     private MenuOption option;
+
+    @Column(name = "option_name", nullable = false, length = 255) // 👈 추가됨
+    private String optionName;
+
+    @Column(name = "extra_price", nullable = false) // 👈 추가됨
+    private Integer extraPrice;
 }
