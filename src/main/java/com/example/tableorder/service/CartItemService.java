@@ -1,5 +1,6 @@
 package com.example.tableorder.service;
 
+import com.example.tableorder.dto.CartDetailResponse;
 import com.example.tableorder.dto.CartItemAddRequest;
 import com.example.tableorder.dto.CartItemAddResponse;
 import com.example.tableorder.entity.cart.Cart;
@@ -12,6 +13,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CartItemService {
@@ -21,7 +24,7 @@ public class CartItemService {
     private final CartRepository cartRepository;
     private final StoreTableRepository storeTableRepository;
 
-
+    //
     private CartItemAddResponse mapToCartItemAddResponse(CartItem cartItem) {
         int q = cartItem.getQuantity();
         int p = cartItem.getPrice();
@@ -34,8 +37,9 @@ public class CartItemService {
                 .linePrice(p * q)
                 .build();
     }
+
     @Transactional
-    public CartItemAddResponse cartItemCreate(Long storeId, Long tableId,CartItemAddRequest request){
+    public CartItemAddResponse cartItemCreate(Long storeId, Long tableId, CartItemAddRequest request) {
 
         // 입력검증
         if (request.getQuantity() == null || request.getQuantity() <= 0) {
@@ -60,7 +64,7 @@ public class CartItemService {
         int price = menuItem.getPrice();
 
         // 언어 기준으로 이름 조회
-        String name = menuItemI18nRepository.findByMenuItemIdAndLang(menuItem.getId(),request.getLang())
+        String name = menuItemI18nRepository.findByMenuItemIdAndLang(menuItem.getId(), request.getLang())
                 .map(MenuItemI18n::getName)
                 .orElse("이름없음");
 
@@ -73,7 +77,43 @@ public class CartItemService {
                 .menuName(name)
                 .build();
 
-        CartItem saved =  cartItemRepository.save(cartItem);
+        CartItem saved = cartItemRepository.save(cartItem);
         return mapToCartItemAddResponse(saved);
+    }
+
+    private CartDetailResponse mapToCartDetailResponse(List<CartItem> cartItems) {
+
+        List<CartDetailResponse.Item> items = cartItems.stream()
+                .map(item -> CartDetailResponse.Item.builder()
+                        .cartItemId(item.getId())
+                        .menuItemId(item.getMenuItem().getId())
+                        .menuName(item.getMenuName())
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
+                        .linePrice(item.getQuantity() * item.getPrice())
+                        .build())
+                .toList();
+
+        int total = items.stream()
+                .mapToInt(CartDetailResponse.Item::getLinePrice)
+                .sum();
+
+        return CartDetailResponse.builder()
+                .items(items)
+                .cartTotalPrice(total)
+                .build();
+    }
+
+    @Transactional
+    public CartDetailResponse getCart(Long storeId, Long tableId) {
+        StoreTable storeTable = storeTableRepository.findByStoreIdAndId(storeId, tableId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 테이블"));
+
+        Cart cart = cartRepository.findByTable(storeTable)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 없음"));
+
+        List<CartItem> cartItems = cartItemRepository.findByCart(cart);
+
+        return mapToCartDetailResponse(cartItems);
     }
 }
