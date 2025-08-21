@@ -23,9 +23,6 @@ public class CartItem {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "menu_name", nullable = false, length = 255) // 👈 추가됨
-    private String menuName;
-
     @Column(name = "price", nullable = false) // 👈 추가됨 (장바구니 담을 당시 가격)
     private Integer price;
 }
