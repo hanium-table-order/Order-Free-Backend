@@ -23,7 +23,6 @@ public class MenuItem {
     @Column(nullable = false)
     private Integer price;
 
-
     @Column(name = "image_url")
     private String imageUrl;
 
