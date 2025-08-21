@@ -114,6 +114,10 @@ public class CartItemService {
 
         List<CartItem> cartItems = cartItemRepository.findByCart(cart);
 
+        if (cartItems.isEmpty()) {
+            throw new IllegalArgumentException("장바구니가 비어있습니다.");
+        }
+
         return mapToCartDetailResponse(cartItems);
     }
 }
