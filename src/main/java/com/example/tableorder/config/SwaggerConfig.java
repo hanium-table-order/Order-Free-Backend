@@ -31,6 +31,6 @@ public class SwaggerConfig {
                 .contact(new Contact()
                         .name("개발팀")
                         .email("dev@example.com")
-                        .url("https://github.com/your-repo"));
+                        .url("https://github.com/hanium-table-order/Order-Free-Backend"));
     }
 }
