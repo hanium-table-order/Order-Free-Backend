@@ -1,5 +1,9 @@
 package com.example.tableorder.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.example.tableorder.dto.CartDetailResponse;
 import com.example.tableorder.dto.CartItemAddRequest;
 import com.example.tableorder.dto.CartItemAddResponse;
@@ -8,23 +12,25 @@ import com.example.tableorder.entity.cart.CartItem;
 import com.example.tableorder.entity.menu.MenuItem;
 import com.example.tableorder.entity.menu.MenuItemI18n;
 import com.example.tableorder.entity.store.StoreTable;
-import com.example.tableorder.repository.*;
+import com.example.tableorder.repository.CartItemRepository;
+import com.example.tableorder.repository.CartRepository;
+import com.example.tableorder.repository.MenuItemI18nRepository;
+import com.example.tableorder.repository.MenuRepository;
+import com.example.tableorder.repository.StoreTableRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CartItemService {
+
     private final CartItemRepository cartItemRepository;
     private final MenuRepository menuRepository;
     private final MenuItemI18nRepository menuItemI18nRepository;
     private final CartRepository cartRepository;
     private final StoreTableRepository storeTableRepository;
 
-    //
     private CartItemAddResponse mapToCartItemAddResponse(CartItem cartItem) {
         int q = cartItem.getQuantity();
         int p = cartItem.getPrice();
@@ -54,8 +60,8 @@ public class CartItemService {
         // 장바구니 조회, 없으면 생성
         Cart cart = cartRepository.findByTable(storeTable)
                 .orElseGet(() -> cartRepository.save(
-                        Cart.builder().table(storeTable).build()
-                ));
+                Cart.builder().table(storeTable).build()
+        ));
 
         // 메뉴 조회
         MenuItem menuItem = menuRepository.findById(request.getMenuItemId())
@@ -85,13 +91,13 @@ public class CartItemService {
 
         List<CartDetailResponse.Item> items = cartItems.stream()
                 .map(item -> CartDetailResponse.Item.builder()
-                        .cartItemId(item.getId())
-                        .menuItemId(item.getMenuItem().getId())
-                        .menuName(item.getMenuName())
-                        .quantity(item.getQuantity())
-                        .price(item.getPrice())
-                        .linePrice(item.getQuantity() * item.getPrice())
-                        .build())
+                .cartItemId(item.getId())
+                .menuItemId(item.getMenuItem().getId())
+                .menuName(item.getMenuName())
+                .quantity(item.getQuantity())
+                .price(item.getPrice())
+                .linePrice(item.getQuantity() * item.getPrice())
+                .build())
                 .toList();
 
         int total = items.stream()

@@ -34,6 +34,10 @@ dependencies {
 
     // DB 드라이버
     runtimeOnly 'com.mysql:mysql-connector-j'
+    
+    // Flyway - 데이터베이스 마이그레이션
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
