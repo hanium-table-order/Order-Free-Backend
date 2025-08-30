@@ -70,6 +70,7 @@ CREATE TABLE menu_option_i18n (
     menu_option_id BIGINT NOT NULL,
     lang VARCHAR(10) NOT NULL,
     name VARCHAR(255) NOT NULL,
+    description VARCHAR(2000),
     CONSTRAINT fk_menu_option_i18n_menu_option FOREIGN KEY (menu_option_id) REFERENCES menu_option(id) ON DELETE CASCADE,
     CONSTRAINT uk_menu_option_lang UNIQUE (menu_option_id, lang)
 );
