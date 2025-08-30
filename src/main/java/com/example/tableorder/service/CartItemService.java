@@ -47,9 +47,12 @@ public class CartItemService {
     @Transactional
     public CartItemAddResponse cartItemCreate(Long storeId, Long tableId, CartItemAddRequest request) {
 
-        // 입력검증
+        // 입력검증 강화
+        if (request.getMenuItemId() == null) {
+            throw new IllegalArgumentException("메뉴 아이템 ID는 필수입니다.");
+        }
         if (request.getQuantity() == null || request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("quantity는 1 이상이어야 합니다.");
+            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
         }
         String lang = (request.getLang() == null || request.getLang().isBlank()) ? "ko" : request.getLang();
 
@@ -66,24 +69,35 @@ public class CartItemService {
         // 메뉴 조회
         MenuItem menuItem = menuRepository.findById(request.getMenuItemId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메뉴 ID"));
+
         // 메뉴 가격 가져오기
         int price = menuItem.getPrice();
 
         // 언어 기준으로 이름 조회
-        String name = menuItemI18nRepository.findByMenuItemIdAndLang(menuItem.getId(), request.getLang())
+        String name = menuItemI18nRepository.findByMenuItemIdAndLang(menuItem.getId(), lang)
                 .map(MenuItemI18n::getName)
                 .orElse("이름없음");
 
-        // 장바구니
-        CartItem cartItem = CartItem.builder()
-                .cart(cart)
-                .menuItem(menuItem)
-                .quantity(request.getQuantity())
-                .price(price)
-                .menuName(name)
-                .build();
+        // 기존 장바구니 아이템 조회 (중복 처리)
+        CartItem existingCartItem = cartItemRepository.findByCartAndMenuItem(cart, menuItem).orElse(null);
 
-        CartItem saved = cartItemRepository.save(cartItem);
+        CartItem saved;
+        if (existingCartItem != null) {
+            // 기존 아이템이 있으면 수량만 증가
+            existingCartItem.setQuantity(existingCartItem.getQuantity() + request.getQuantity());
+            saved = cartItemRepository.save(existingCartItem);
+        } else {
+            // 새 아이템 추가
+            CartItem cartItem = CartItem.builder()
+                    .cart(cart)
+                    .menuItem(menuItem)
+                    .quantity(request.getQuantity())
+                    .price(price)
+                    .menuName(name)
+                    .build();
+            saved = cartItemRepository.save(cartItem);
+        }
+
         return mapToCartItemAddResponse(saved);
     }
 
@@ -116,12 +130,16 @@ public class CartItemService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 테이블"));
 
         Cart cart = cartRepository.findByTable(storeTable)
-                .orElseThrow(() -> new IllegalArgumentException("장바구니 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
 
         List<CartItem> cartItems = cartItemRepository.findByCart(cart);
 
+        // 빈 장바구니일 때는 빈 응답 반환 (예외 대신)
         if (cartItems.isEmpty()) {
-            throw new IllegalArgumentException("장바구니가 비어있습니다.");
+            return CartDetailResponse.builder()
+                    .items(List.of())
+                    .cartTotalPrice(0)
+                    .build();
         }
 
         return mapToCartDetailResponse(cartItems);
