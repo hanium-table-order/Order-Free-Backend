@@ -97,3 +97,4 @@ INSERT INTO menu_option_i18n (menu_option_id, lang, name, description) VALUES
 (5, 'en', 'Extra Cheese', 'Add mozzarella cheese'),
 (6, 'ko', '토핑 추가', '다양한 토핑 추가'),
 (6, 'en', 'Extra Topping', 'Add various toppings');
+
