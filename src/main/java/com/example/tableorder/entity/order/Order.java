@@ -4,6 +4,8 @@ import com.example.tableorder.entity.store.StoreTable;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
@@ -20,9 +22,22 @@ public class Order {
     @Column(nullable = false)
     private String status;
 
-    @Column(name = "total_price", nullable = false)
-    private Integer totalPrice;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    // 계산된 총액을 가져오는 메서드
+    public Integer getTotalPrice() {
+        return orderItems.stream()
+                .mapToInt(item -> item.getUnitPrice() * item.getQuantity())
+                .sum();
+    }
+
+    // 주문 항목 추가 메서드
+    public void addOrderItem(OrderItem orderItem) {
+        orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
 }
