@@ -57,7 +57,7 @@ public class CartItemService {
         String lang = (request.getLang() == null || request.getLang().isBlank()) ? "ko" : request.getLang();
 
         // StoreTable 조회
-        StoreTable storeTable = storeTableRepository.findByStoreIdAndId(storeId, tableId)
+        StoreTable storeTable = storeTableRepository.findByStore_IdAndId(storeId, tableId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 테이블"));
 
         // 장바구니 조회, 없으면 생성
@@ -126,7 +126,7 @@ public class CartItemService {
 
     @Transactional
     public CartDetailResponse getCart(Long storeId, Long tableId) {
-        StoreTable storeTable = storeTableRepository.findByStoreIdAndId(storeId, tableId)
+        StoreTable storeTable = storeTableRepository.findByStore_IdAndId(storeId, tableId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 테이블"));
 
         Cart cart = cartRepository.findByTable(storeTable)
