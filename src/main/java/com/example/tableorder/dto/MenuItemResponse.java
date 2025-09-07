@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "메뉴 아이템 정보", example = "아메리카노 메뉴 상세 정보")
+@Schema(description = "메뉴 아이템 정보")
 public class MenuItemResponse {
 
     @NotNull

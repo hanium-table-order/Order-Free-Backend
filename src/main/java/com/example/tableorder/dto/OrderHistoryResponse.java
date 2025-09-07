@@ -1,8 +1,6 @@
 package com.example.tableorder.dto;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,5 +13,5 @@ public class OrderHistoryResponse {
     private Integer totalItemCount; // 총 주문 건 수
     private Integer totalAmount; // 총 결제 금액
 
-    private List<OrderItemDetail> orderItems;
+    private List<OrderItemDetailResponse> orderItems;
 }
