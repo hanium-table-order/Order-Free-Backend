@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "메뉴 옵션 정보", example = "샷 추가 옵션")
+@Schema(description = "메뉴 옵션 정보")
 public class MenuOptionResponse {
 
     @NotNull
