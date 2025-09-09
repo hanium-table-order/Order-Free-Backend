@@ -4,9 +4,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * EventBroadcaster 구현 클래스.
- * - SimpMessagingTemplate으로 /topic/...에 메시지 전송.
- * - 스텁으로 빈 문자열 메시지 (실제 데이터 필요 시 확장).
+ * EventBroadcaster 구현 클래스. - SimpMessagingTemplate으로 /topic/...에 메시지 전송. - 실시간
+ * 이벤트 브로드캐스트 지원.
  */
 @Component
 public class EventBroadcasterImpl implements EventBroadcaster {
@@ -19,6 +18,17 @@ public class EventBroadcasterImpl implements EventBroadcaster {
 
     @Override
     public void publish(String topic) {
-        messagingTemplate.convertAndSend("/topic/" + topic, "");  // 빈 메시지, 필요 시 데이터 추가
+        messagingTemplate.convertAndSend("/topic/" + topic, "");
+    }
+
+    @Override
+    public void publish(String topic, Object data) {
+        messagingTemplate.convertAndSend("/topic/" + topic, data);
+    }
+
+    @Override
+    public void publishToTable(String topic, Object data, Long storeId, Long tableId) {
+        String tableTopic = String.format("/topic/store.%d.table.%d.%s", storeId, tableId, topic);
+        messagingTemplate.convertAndSend(tableTopic, data);
     }
 }
