@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -34,33 +33,10 @@ public class WebSocketEventListener {
         Long storeId = null;
         Long tableId = null;
 
-        try {
-            StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-
-            // 세션 속성에서 매장/테이블 정보 가져오기
-            Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
-            Object storeIdObj = sessionAttributes.get("storeId");
-            Object tableIdObj = sessionAttributes.get("tableId");
-
-            System.out.println("세션 속성에서 추출 시도 - storeId: " + storeIdObj + ", tableId: " + tableIdObj);
-
-            if (storeIdObj != null && tableIdObj != null) {
-                storeId = Long.parseLong(storeIdObj.toString());
-                tableId = Long.parseLong(tableIdObj.toString());
-                System.out.println("세션 속성에서 추출된 매장/테이블 정보 - 매장: " + storeId + ", 테이블: " + tableId);
-            } else {
-                // 세션 속성에서 정보를 가져올 수 없으면 기본값 사용
-                storeId = getFirstStoreId();
-                tableId = getFirstTableId(storeId);
-                System.out.println("기본값 사용 - 매장: " + storeId + ", 테이블: " + tableId);
-            }
-        } catch (Exception e) {
-            System.out.println("세션 속성 추출 오류: " + e.getMessage());
-            // 오류 발생 시 기본값 사용
-            storeId = getFirstStoreId();
-            tableId = getFirstTableId(storeId);
-            System.out.println("오류로 인한 기본값 사용 - 매장: " + storeId + ", 테이블: " + tableId);
-        }
+        // 간단하게 기본값 사용 (인터셉터 제거로 인해)
+        storeId = getFirstStoreId();
+        tableId = getFirstTableId(storeId);
+        System.out.println("기본값 사용 - 매장: " + storeId + ", 테이블: " + tableId);
 
         System.out.println("사용자 연결 - 매장: " + storeId + ", 테이블: " + tableId);
         realtimeStatsService.userConnected(storeId, tableId);

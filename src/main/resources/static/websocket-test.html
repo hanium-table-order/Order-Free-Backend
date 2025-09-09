@@ -173,7 +173,7 @@
 
             console.log('연결 시도 중... 매장 ID:', storeId, '테이블 ID:', tableId);
 
-            const socket = new SockJS(`/ws?storeId=${storeId}&tableId=${tableId}`);
+            const socket = new SockJS('/ws');
             stompClient = Stomp.over(socket);
 
             // 디버그 모드 활성화
