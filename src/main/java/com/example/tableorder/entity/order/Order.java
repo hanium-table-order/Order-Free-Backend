@@ -7,12 +7,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-@Entity @Table(name = "`order`")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "`order`")
 public class Order {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -25,11 +30,14 @@ public class Order {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "total_price", nullable = false)
+    private Integer totalPrice;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    // 계산된 총액을 가져오는 메서드
-    public Integer getTotalPrice() {
+    // 계산된 총액을 가져오는 메서드 (DB 필드와 별도로 계산)
+    public Integer getCalculatedTotalPrice() {
         return orderItems.stream()
                 .mapToInt(item -> item.getUnitPrice() * item.getQuantity())
                 .sum();

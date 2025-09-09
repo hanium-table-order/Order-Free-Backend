@@ -1,12 +1,15 @@
 package com.example.tableorder.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@Builder
 public class OrderHistoryResponse {
+
     private Long orderId; // 주문 번호
     private LocalDateTime orderTime; // 주문 시간
     private String orderStatus; // 주문 상태(주문 접수, 조리중, 완료)
