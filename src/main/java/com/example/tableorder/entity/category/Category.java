@@ -1,15 +1,24 @@
 package com.example.tableorder.entity.category;
 
+import com.example.tableorder.entity.menu.MenuItem;
 import com.example.tableorder.entity.store.Store;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-@Entity @Table(name = "category")
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "category")
 public class Category {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;                               // bigint PK
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -27,5 +36,8 @@ public class Category {
 
     @Column(name = "name_ja")
     private String nameJa;
-}
 
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MenuItem> menuItems = new ArrayList<>();  // MenuItem과의 양방향 매핑 추가
+}
