@@ -1,5 +1,6 @@
 package com.example.tableorder.util;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -8,13 +9,11 @@ import org.springframework.stereotype.Component;
  * 이벤트 브로드캐스트 지원.
  */
 @Component
+@RequiredArgsConstructor
 public class EventBroadcasterImpl implements EventBroadcaster {
 
+    // STOMP 메시지 전송 도구(백엔드 -> 구독 중인 프론트엔드로 메시지 전송)
     private final SimpMessagingTemplate messagingTemplate;
-
-    public EventBroadcasterImpl(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
 
     @Override
     public void publish(String topic) {
