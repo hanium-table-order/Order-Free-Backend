@@ -1,6 +1,7 @@
 package com.example.tableorder.controller;
 
 import com.example.tableorder.dto.OrderHistoryResponse;
+import com.example.tableorder.dto.realtime.ViewerCountEvent;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -177,12 +178,14 @@ public class OrderController {
             summary = "테스트: 접속자 수 리셋",
             description = "현재 접속자 수를 0으로 리셋합니다."
     )
-    public ResponseEntity<String> resetViewerCount(
+    public ResponseEntity<ViewerCountEvent> resetViewerCount(
             @Parameter(description = "매장 ID", example = "1") @PathVariable Long storeId,
             @Parameter(description = "테이블 ID", example = "1") @PathVariable Long tableId) {
-        realtimeStatsService.resetViewerCount(storeId);
-        return ResponseEntity.ok("매장 " + storeId + " 접속자 수 리셋 완료");
+
+        ViewerCountEvent event = realtimeStatsService.resetViewerCount(storeId);
+        return ResponseEntity.ok(event);
     }
+
 
     /**
      * 테스트용: 현재 접속자 수 조회
@@ -192,12 +195,22 @@ public class OrderController {
             summary = "테스트: 현재 접속자 수 조회",
             description = "현재 메뉴판을 보고 있는 사용자 수를 조회합니다."
     )
-    public ResponseEntity<String> getCurrentViewerCount(
+    public ResponseEntity<ViewerCountEvent> getCurrentViewerCount(
             @Parameter(description = "매장 ID", example = "1") @PathVariable Long storeId,
             @Parameter(description = "테이블 ID", example = "1") @PathVariable Long tableId) {
+
         int count = realtimeStatsService.getCurrentViewerCount(storeId);
-        return ResponseEntity.ok("매장 " + storeId + " 현재 " + count + "명이 메뉴를 보고 있습니다");
+
+        ViewerCountEvent event = ViewerCountEvent.builder()
+                .storeId(storeId)
+                .viewerCount(count)
+                .message("현재 " + count + "명이 메뉴를 보고 있습니다")
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        return ResponseEntity.ok(event);
     }
+
 
     /**
      * 테스트용: 테이블 정보 확인
