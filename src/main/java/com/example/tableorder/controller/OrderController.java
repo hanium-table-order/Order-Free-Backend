@@ -38,19 +38,19 @@ public class OrderController {
             description = "장바구니에 있는 상품들을 주문으로 생성합니다. 주문 후 장바구니는 자동으로 비워집니다."
     )
     @ApiResponses({
-        @ApiResponse(
-                responseCode = "201",
-                description = "주문이 성공적으로 생성됨",
-                content = @Content(schema = @Schema(implementation = OrderResponse.class))
-        ),
-        @ApiResponse(
-                responseCode = "400",
-                description = "잘못된 요청 (장바구니가 비어있음, 주문할 상품이 없음 등)"
-        ),
-        @ApiResponse(
-                responseCode = "404",
-                description = "테이블을 찾을 수 없음"
-        )
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "주문이 성공적으로 생성됨",
+                    content = @Content(schema = @Schema(implementation = OrderResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (장바구니가 비어있음, 주문할 상품이 없음 등)"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "테이블을 찾을 수 없음"
+            )
     })
     public ResponseEntity<OrderResponse> createOrder(
             @Parameter(description = "매장 ID", example = "1") @PathVariable Long storeId,
@@ -89,15 +89,15 @@ public class OrderController {
             description = "특정 테이블의 최근 12시간 이내 주문 히스토리를 조회합니다."
     )
     @ApiResponses({
-        @ApiResponse(
-                responseCode = "200",
-                description = "주문 히스토리 조회 성공",
-                content = @Content(schema = @Schema(implementation = OrderHistoryResponse.class))
-        ),
-        @ApiResponse(
-                responseCode = "404",
-                description = "테이블을 찾을 수 없음"
-        )
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "주문 히스토리 조회 성공",
+                    content = @Content(schema = @Schema(implementation = OrderHistoryResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "테이블을 찾을 수 없음"
+            )
     })
     public ResponseEntity<List<OrderHistoryResponse>> getOrderHistory(
             @Parameter(description = "매장 ID", example = "1") @PathVariable Long storeId,

@@ -1,6 +1,6 @@
 package com.example.tableorder.config;
 
-import com.example.tableorder.util.JwtDecoderUtil;
+import com.example.tableorder.util.JwtDecoderUtil; // JwtConfig에서 제공할 유틸 가정 (아래 JwtConfig 참조)
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * - Swagger UI 및 OpenAPI 엔드포인트 (/v3/api-docs/** 등) permitAll (테스트용, 프로덕션에서 제거 추천).
  */
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true) // @PreAuthorize 활성화
+@EnableMethodSecurity(prePostEnabled = false) // 개발 중 테스트 편의를 위해 임시 비활성화 (복원 시 true로 변경)
 public class SecurityConfig {
 
     private final JwtDecoderUtil jwtDecoderUtil;
@@ -43,7 +43,9 @@ public class SecurityConfig {
                         // 테스트용: 주문 및 장바구니 관련 API 임시 허용
                         .requestMatchers("/api/stores/*/tables/*/orders/**").permitAll()
                         .requestMatchers("/api/stores/*/tables/*/carts/**").permitAll()
-                        .requestMatchers("/api/**").hasRole("OWNER") // 모든 API OWNER 권한 필요
+                        // 개발 중 테스트 편의를 위해 전체 /api/** 임시 permitAll (프로덕션에서 복원 필수)
+                        .requestMatchers("/api/**").permitAll()
+                        // 원래 설정: .requestMatchers("/api/**").hasRole("OWNER") // 모든 API OWNER 권한 필요
                         .anyRequest().authenticated() // 기타 인증 필요
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtDecoderUtil), UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가

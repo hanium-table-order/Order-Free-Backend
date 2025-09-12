@@ -2,6 +2,7 @@ package com.example.tableorder.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,7 +19,7 @@ import java.util.Map;
  * - 커스텀 예외 및 검증 오류를 고정 형식으로 응답.
  * - 에러 응답 형식: {timestamp, path, error, message, status}
  */
-//@RestControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
@@ -56,6 +57,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(ValidationException ex, WebRequest request) {
         return buildErrorResponse(ex, "VALIDATION_ERROR", HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthorizationDenied(AuthorizationDeniedException ex, WebRequest request) {
+        return buildErrorResponse(ex, "FORBIDDEN", HttpStatus.FORBIDDEN, request);  // @PreAuthorize 실패 시 403
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
