@@ -1,6 +1,7 @@
 package com.example.tableorder.service;
 
 import com.example.tableorder.dto.realtime.OrderStatusChangedEvent;
+import com.example.tableorder.dto.realtime.ViewerCountEvent;
 import com.example.tableorder.entity.store.Store;
 import com.example.tableorder.entity.store.StoreTable;
 import com.example.tableorder.repository.StoreRepository;
@@ -34,7 +35,7 @@ public class RealtimeStatsService {
     public void userConnected(Long storeId, Long tableId) {
         // 매장별 접속자 수 증가
         AtomicInteger storeCount = storeViewerCounts.computeIfAbsent(storeId, k -> new AtomicInteger(0));
-        int newCount = storeCount.incrementAndGet();
+        int newCount = storeCount.incrementAndGet(); // 접속자 수 +1
         System.out.println("사용자 접속 - 매장 " + storeId + " 현재 접속자 수: " + newCount);
 
         // 즉시 접속자 수 브로드캐스트 (매장 전체)
@@ -64,18 +65,15 @@ public class RealtimeStatsService {
      * 매장 전체 접속자 수 브로드캐스트
      */
     private void broadcastStoreViewerCount(Long storeId, int count) {
-        OrderStatusChangedEvent viewerEvent = OrderStatusChangedEvent.builder()
+        ViewerCountEvent viewerCountEvent = ViewerCountEvent.builder()
                 .storeId(storeId)
-                .tableId(null) // 매장 전체이므로 테이블 ID는 null
-                .orderId(null)
-                .orderStatus("접속자수")
-                .userName("시스템")
-                .timestamp(System.currentTimeMillis())
-                .message("현재 " + count + "명이 메뉴를 보고 있습니다")
-                .build();
+                        .viewerCount(count)
+                                .message("현재 " + count + "명이 메뉴를 보고 있습니다")
+                                        .timestamp(System.currentTimeMillis())
+                                                .build();
 
         // 매장 전체 토픽으로 전송
-        eventBroadcaster.publish("store." + storeId + ".viewer.count", viewerEvent);
+        eventBroadcaster.publish("store." + storeId + ".viewer.count", viewerCountEvent);
     }
 
     /**
@@ -115,12 +113,25 @@ public class RealtimeStatsService {
     /**
      * 접속자 수 리셋 (테스트용)
      */
-    public void resetViewerCount(Long storeId) {
+    public ViewerCountEvent resetViewerCount(Long storeId) {
         AtomicInteger storeCount = storeViewerCounts.get(storeId);
+        int newCount = 0;
         if (storeCount != null) {
-            storeCount.set(0);
-            broadcastStoreViewerCount(storeId, 0);
-            System.out.println("매장 " + storeId + " 접속자 수 리셋됨");
+            storeCount.set(newCount);
         }
+
+        ViewerCountEvent event = ViewerCountEvent.builder()
+                .storeId(storeId)
+                .viewerCount(newCount)
+                .message("접속자 수가 0으로 리셋되었습니다")
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        // 리셋 직후에도 실시간 브로드캐스트
+        broadcastStoreViewerCount(storeId, newCount);
+
+        System.out.println("매장 " + storeId + " 접속자 수 리셋됨");
+        return event;
     }
+
 }
