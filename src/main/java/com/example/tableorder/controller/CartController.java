@@ -2,6 +2,7 @@ package com.example.tableorder.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -87,6 +88,43 @@ public class CartController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{cartItemId}")
+    @Operation(
+            summary = "장바구니 아이템 삭제",
+            description = "특정 테이블의 장바구니에서 메뉴 아이템을 삭제합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "204",
+                description = "장바구니 아이템이 성공적으로 삭제됨"
+        ),
+        @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 요청 (존재하지 않는 아이템, 권한 없음 등)"
+        ),
+        @ApiResponse(
+                responseCode = "404",
+                description = "테이블 또는 장바구니를 찾을 수 없음"
+        )
+    })
+    public ResponseEntity<Void> deleteCartItem(
+            @Parameter(description = "매장 ID", example = "1") @PathVariable Long storeId,
+            @Parameter(description = "테이블 ID", example = "5") @PathVariable Long tableId,
+            @Parameter(description = "삭제할 장바구니 아이템 ID", example = "10") @PathVariable Long cartItemId) {
+        try {
+            cartItemService.deleteCartItem(storeId, tableId, cartItemId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            // 에러 메시지에 따라 적절한 HTTP 상태 코드 반환
+            if (e.getMessage().contains("존재하지 않는 테이블")
+                    || e.getMessage().contains("장바구니가 존재하지 않습니다")) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
         }
     }
 }
