@@ -44,7 +44,7 @@ public class SwaggerConfig {
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
-                        // 퍼블릭 IP (배포 서버, 기본값)
+                        // 퍼블릭 IP (배포 서버)
                         new Server().url("http://52.79.67.165").description("EC2 Public Server"),
                         // 로컬 개발 환경
                         new Server().url("http://localhost:8080").description("Local Development Server")
