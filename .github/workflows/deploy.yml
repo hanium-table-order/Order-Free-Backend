@@ -33,8 +33,6 @@ jobs:
         source: "build/libs/table-order-0.0.1-SNAPSHOT.jar"
         target: "/home/ubuntu/"
         overwrite: true
-        strip_components: 2
-
 
     - name: Restart service on EC2
       uses: appleboy/ssh-action@v0.1.10
