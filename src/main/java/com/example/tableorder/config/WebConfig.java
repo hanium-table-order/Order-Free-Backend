@@ -17,7 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns("*") // 모든 오리진 허용 (개발/배포 환경 대응)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true)
+                .allowCredentials(false)
                 .maxAge(3600);
     }
 }
