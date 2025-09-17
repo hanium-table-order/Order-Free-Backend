@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "dev" ]   # dev 브랜치에 push될 때마다 실행
 
 jobs:
   build-and-deploy:
@@ -20,7 +20,7 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-
+    
     - name: Build with Gradle
       run: ./gradlew clean build -x test
 
@@ -31,8 +31,8 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         source: "build/libs/table-order-0.0.1-SNAPSHOT.jar"
-        target: "/home/ubuntu/table-order-0.0.1-SNAPSHOT.jar"
-        overwrite: true
+        target: "/home/ubuntu/"
+        overwrite: true   # 항상 덮어쓰기
 
     - name: Restart service on EC2
       uses: appleboy/ssh-action@v0.1.10
