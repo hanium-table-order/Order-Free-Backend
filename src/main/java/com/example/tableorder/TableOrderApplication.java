@@ -6,6 +6,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+@OpenAPIDefinition(
+        servers = {
+                @Server(url = "http://52.79.67.165:8080", description = "EC2 API Server"),
+                @Server(url = "http://localhost:8080", description = "Local Server")
+
+        }
+)
+
 @SpringBootApplication
 @EnableScheduling
 public class TableOrderApplication {
