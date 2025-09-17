@@ -8,9 +8,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 /**
  * WebSocket 설정 클래스. - Stomp 프로토콜 지원. - 엔드포인트 /ws, 브로커 /topic.
+ *
+ * @deprecated SSE 방식으로 대체됨. 접속자 수 조회는 SseController 사용 권장
  */
 @Configuration
-@EnableWebSocketMessageBroker
+// @EnableWebSocketMessageBroker  // SSE 사용으로 인해 비활성화
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
@@ -22,7 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");  // 토픽 기반 브로드캐스트
-        registry.setApplicationDestinationPrefixes("/app");  // 클라이언트 메시지 접두사
+        registry.enableSimpleBroker("/topic");  // 서버 -> 클라이언트
+        registry.setApplicationDestinationPrefixes("/app");  // 클라이언트 -> 서버
     }
 }
