@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 가게 관리 서비스.
- * - 등록/조회/부분 수정 처리.
- * - 사업자 번호 중복 검증.
+ * 가게 관리 서비스. - 등록/조회/부분 수정 처리. - 사업자 번호 중복 검증.
  */
 @Service
 @RequiredArgsConstructor
@@ -26,8 +24,8 @@ public class StoreService {
     private final StoreRepository storeRepository;
 
     /**
-     * 가게 등록.
-     * - 사업자 번호 중복 검증.
+     * 가게 등록. - 사업자 번호 중복 검증.
+     *
      * @param dto 요청 DTO
      * @return StoreResponseDto
      */
@@ -52,7 +50,21 @@ public class StoreService {
     }
 
     /**
+     * 모든 가게 목록 조회 (메뉴판 접근용).
+     *
+     * @return List<StoreResponseDto>
+     */
+    public java.util.List<StoreResponseDto> getAllStores() {
+        java.util.List<Store> stores = storeRepository.findAll();
+        log.info("가게 목록 조회: 총 {}개", stores.size());
+        return stores.stream()
+                .map(this::toStoreResponseDto)
+                .toList();
+    }
+
+    /**
      * 가게 조회.
+     *
      * @param storeId 가게 ID
      * @return StoreResponseDto
      */
@@ -69,9 +81,8 @@ public class StoreService {
     }
 
     /**
-     * 가게 부분 수정.
-     * - 사업자 번호 변경 시 중복 검증.
-     * - null 필드 무시.
+     * 가게 부분 수정. - 사업자 번호 변경 시 중복 검증. - null 필드 무시.
+     *
      * @param storeId 가게 ID
      * @param dto 요청 DTO
      * @return StoreResponseDto
@@ -87,10 +98,18 @@ public class StoreService {
             }
             store.setBusinessNumber(dto.getBusinessNumber());
         }
-        if (dto.getName() != null) store.setName(dto.getName());
-        if (dto.getAddress() != null) store.setAddress(dto.getAddress());
-        if (dto.getHours() != null) store.setHours(dto.getHours());
-        if (dto.getFloorplanUrl() != null) store.setFloorplanUrl(dto.getFloorplanUrl());
+        if (dto.getName() != null) {
+            store.setName(dto.getName());
+        }
+        if (dto.getAddress() != null) {
+            store.setAddress(dto.getAddress());
+        }
+        if (dto.getHours() != null) {
+            store.setHours(dto.getHours());
+        }
+        if (dto.getFloorplanUrl() != null) {
+            store.setFloorplanUrl(dto.getFloorplanUrl());
+        }
 
         storeRepository.save(store);
         log.info("가게 수정: id={}, businessNumber={}", store.getId(), store.getBusinessNumber());

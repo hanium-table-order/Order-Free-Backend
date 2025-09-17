@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE 실시간 접속자 수 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .viewer-count {
+            font-size: 2em;
+            color: #007bff;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .message {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🍽️ SSE 실시간 접속자 수 테스트</h1>
+
+        <div style="margin-bottom: 20px;">
+            <label for="storeSelect" style="display: block; margin-bottom: 10px; font-weight: bold;">매장 선택:</label>
+            <select id="storeSelect"
+                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;">
+                <option value="">매장을 선택하세요...</option>
+            </select>
+        </div>
+
+        <div id="status" class="status disconnected">
+            연결 상태: 연결 안됨
+        </div>
+
+        <div class="viewer-count">
+            현재 접속자 수: <span id="viewerCount">0</span>명
+        </div>
+
+        <div id="message" class="message">
+            메시지가 여기에 표시됩니다.
+        </div>
+
+        <div>
+            <button id="connectBtn" onclick="connect()" disabled>연결</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>연결 해제</button>
+            <button onclick="getCurrentCount()" disabled id="currentBtn">현재 수 조회</button>
+            <button onclick="resetCount()" disabled id="resetBtn">리셋</button>
+        </div>
+
+        <h3>연결 로그</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let currentStoreId = null; // 선택된 매장 ID
+        let autoRefreshInterval = null; // 자동 새로고침 인터벌
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // 매장 목록 로드
+        async function loadStores() {
+            try {
+                const response = await fetch('/api/stores');
+                const stores = await response.json();
+
+                const storeSelect = document.getElementById('storeSelect');
+                storeSelect.innerHTML = '<option value="">매장을 선택하세요...</option>';
+
+                stores.forEach(store => {
+                    const option = document.createElement('option');
+                    option.value = store.id;
+                    option.textContent = `${store.name} (ID: ${store.id})`;
+                    storeSelect.appendChild(option);
+                });
+
+                log(`매장 목록 로드 완료: ${stores.length}개 매장`);
+            } catch (error) {
+                log(`매장 목록 로드 실패: ${error.message}`);
+            }
+        }
+
+        // 매장 선택 변경 시
+        function onStoreChange() {
+            const storeSelect = document.getElementById('storeSelect');
+            const selectedStoreId = storeSelect.value;
+
+            if (selectedStoreId) {
+                currentStoreId = parseInt(selectedStoreId);
+                const selectedStoreName = storeSelect.options[storeSelect.selectedIndex].textContent;
+                log(`매장 선택됨: ${selectedStoreName}`);
+
+                // 연결 버튼 활성화
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('currentBtn').disabled = false;
+                document.getElementById('resetBtn').disabled = false;
+            } else {
+                currentStoreId = null;
+                log('매장 선택 해제됨');
+
+                // 연결 해제 및 버튼 비활성화
+                disconnect();
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('currentBtn').disabled = true;
+                document.getElementById('resetBtn').disabled = true;
+            }
+        }
+
+        // 자동 새로고침 시작 (3초마다)
+        function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+
+            autoRefreshInterval = setInterval(() => {
+                if (currentStoreId && eventSource) {
+                    getCurrentCount(true); // 자동 새로고침임을 표시
+                }
+            }, 3000); // 3초마다 실행
+
+            log('자동 새로고침 시작 (3초마다)');
+        }
+
+        // 자동 새로고침 중단
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                log('자동 새로고침 중단');
+            }
+        }
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+
+            if (connected) {
+                statusDiv.textContent = '연결 상태: 연결됨';
+                statusDiv.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusDiv.textContent = '연결 상태: 연결 안됨';
+                statusDiv.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        function connect() {
+            if (eventSource) {
+                log('이미 연결되어 있습니다.');
+                return;
+            }
+
+            if (!currentStoreId) {
+                log('매장을 먼저 선택해주세요.');
+                return;
+            }
+
+            log(`SSE 연결 시작 - 매장 ID: ${currentStoreId}`);
+
+            eventSource = new EventSource(`/api/sse/viewer-count/${currentStoreId}`);
+
+            eventSource.onopen = function (event) {
+                log('SSE 연결 성공');
+                updateStatus(true);
+                startAutoRefresh(); // 자동 새로고침 시작
+            };
+
+            eventSource.onmessage = function (event) {
+                log(`메시지 수신: ${event.data}`);
+            };
+
+            eventSource.addEventListener('viewer-count', function (event) {
+                const data = JSON.parse(event.data);
+                log(`접속자 수 업데이트: ${data.viewerCount}명`);
+
+                document.getElementById('viewerCount').textContent = data.viewerCount;
+                document.getElementById('message').textContent = data.message;
+            });
+
+            // 서버에서 보내는 heartbeat 이벤트 처리 (연결 상태 체크용)
+            eventSource.addEventListener('heartbeat', function (event) {
+                // heartbeat 이벤트는 조용히 처리 (로그에 표시하지 않음)
+            });
+
+
+            eventSource.onerror = function (event) {
+                log('SSE 연결 오류 발생');
+                updateStatus(false);
+                stopAutoRefresh(); // 자동 새로고침 중단
+
+                if (eventSource.readyState === EventSource.CLOSED) {
+                    log('SSE 연결이 닫혔습니다.');
+                    eventSource = null;
+                }
+            };
+        }
+
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                log('SSE 연결 해제');
+                updateStatus(false);
+                stopAutoRefresh(); // 자동 새로고침 중단
+            }
+        }
+
+        async function getCurrentCount(isAutoRefresh = false) {
+            if (!currentStoreId) {
+                if (!isAutoRefresh) {
+                    log('매장을 먼저 선택해주세요.');
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/sse/viewer-count/${currentStoreId}/current`);
+                const data = await response.json();
+
+                if (!isAutoRefresh) {
+                    log(`현재 접속자 수 조회: ${data.viewerCount}명`);
+                }
+                document.getElementById('viewerCount').textContent = data.viewerCount;
+                document.getElementById('message').textContent = data.message;
+            } catch (error) {
+                if (!isAutoRefresh) {
+                    log(`현재 접속자 수 조회 실패: ${error.message}`);
+                }
+            }
+        }
+
+        async function resetCount() {
+            if (!currentStoreId) {
+                log('매장을 먼저 선택해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/sse/viewer-count/${currentStoreId}/reset`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                log(`접속자 수 리셋: ${data.viewerCount}명`);
+                document.getElementById('viewerCount').textContent = data.viewerCount;
+                document.getElementById('message').textContent = data.message;
+            } catch (error) {
+                log(`접속자 수 리셋 실패: ${error.message}`);
+            }
+        }
+
+        // 페이지 로드 시 매장 목록 로드
+        window.onload = function () {
+            log('페이지 로드 완료');
+            log('매장 목록을 로드합니다...');
+            loadStores();
+
+            // 매장 선택 이벤트 연결
+            document.getElementById('storeSelect').addEventListener('change', onStoreChange);
+        };
+
+        // 페이지 언로드 시 연결 해제 (동기적으로 처리)
+        window.onbeforeunload = function () {
+            if (eventSource) {
+                // 동기적으로 연결 해제
+                eventSource.close();
+                eventSource = null;
+                stopAutoRefresh();
+
+                // 서버에 연결 해제 알림 (navigator.sendBeacon 사용)
+                if (currentStoreId) {
+                    const data = JSON.stringify({ storeId: currentStoreId, action: 'disconnect' });
+                    navigator.sendBeacon('/api/sse/disconnect', data);
+                }
+            }
+        };
+
+        // 페이지 숨김 시에도 연결 해제 (모바일/백그라운드 전환)
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden && eventSource) {
+                // 페이지가 숨겨지면 연결 해제
+                eventSource.close();
+                eventSource = null;
+                stopAutoRefresh();
+                updateStatus(false);
+            }
+        });
+    </script>
+</body>
+
+</html>

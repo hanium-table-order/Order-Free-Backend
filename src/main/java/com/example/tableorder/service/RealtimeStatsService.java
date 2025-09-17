@@ -67,10 +67,10 @@ public class RealtimeStatsService {
     private void broadcastStoreViewerCount(Long storeId, int count) {
         ViewerCountEvent viewerCountEvent = ViewerCountEvent.builder()
                 .storeId(storeId)
-                        .viewerCount(count)
-                                .message("현재 " + count + "명이 메뉴를 보고 있습니다")
-                                        .timestamp(System.currentTimeMillis())
-                                                .build();
+                .viewerCount(count)
+                .message("현재 " + count + "명이 메뉴를 보고 있습니다")
+                .timestamp(System.currentTimeMillis())
+                .build();
 
         // 매장 전체 토픽으로 전송
         eventBroadcaster.publish("store." + storeId + ".viewer.count", viewerCountEvent);
