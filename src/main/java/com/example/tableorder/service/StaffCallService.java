@@ -40,4 +40,22 @@ public class StaffCallService {
                 .active(staffCallType.isActive())
                 .build();
     }
+
+    public void deleteStaffCallType(Long storeId, Long callTypeId) {
+        // 매장 존재 여부 확인
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
+
+        // 호출 타입 존재 여부 확인
+        StaffCallType staffCallType = staffCallTypeRepository.findById(callTypeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 호출 타입이 존재하지 않습니다."));
+
+        // 매장 검증 (보안 차원: 다른 매장 데이터 삭제 못 하게)
+        if (!staffCallType.getStore().getId().equals(store.getId())) {
+            throw new IllegalArgumentException("이 호출 타입은 해당 매장에 속하지 않습니다.");
+        }
+
+        staffCallTypeRepository.delete(staffCallType);
+    }
+
 }
