@@ -5,9 +5,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "staff_call")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-@Entity @Table(name = "staff_call")
 public class StaffCall {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,9 +18,10 @@ public class StaffCall {
     @JoinColumn(name = "table_id", nullable = false)
     private StoreTable table;
 
-    @Lob
-    private String message;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "call_type_id", nullable = false)
+    private StaffCallType callType; // 어떤 호출 종류를 눌렀는지
 
-    @Column(name = "requested_at")
+    @Column(name = "requested_at", nullable = false)
     private LocalDateTime requestedAt;
 }
