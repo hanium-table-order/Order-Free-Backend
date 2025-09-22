@@ -6,8 +6,6 @@ import com.example.tableorder.entity.staffcall.StaffCallType;
 import com.example.tableorder.entity.store.Store;
 import com.example.tableorder.repository.StaffCallTypeRepository;
 import com.example.tableorder.repository.StoreRepository;
-import lombok.Builder;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -58,4 +56,25 @@ public class StaffCallService {
         staffCallTypeRepository.delete(staffCallType);
     }
 
+    public StaffCallTypeResponse staffCallTypeUpdate(Long storeId, Long callTypeId, StaffCallTypeRequest request){
+        // 1. 매장 존재 여부 확인
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
+
+        // 2. 호출 타입 존재 여부 확인
+        StaffCallType staffCallType = staffCallTypeRepository.findById(callTypeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 호출 타입이 존재하지 않습니다."));
+
+        // 3. 매장 검증 (보안 차원: 다른 매장 데이터 수정 못 하게)
+        if (!staffCallType.getStore().getId().equals(store.getId())) {
+            throw new IllegalArgumentException("이 호출 타입은 해당 매장에 속하지 않습니다.");
+        }
+
+        // 4. 메시지 업데이트
+        staffCallType.setMessage(request.getMessage());
+        
+        // 5. 저장 및 응답 반환
+        StaffCallType saved = staffCallTypeRepository.save(staffCallType);
+        return mapToStaffCallTypeResponse(saved);
+    }
 }
