@@ -9,6 +9,8 @@ import com.example.tableorder.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class StaffCallService {
@@ -56,7 +58,7 @@ public class StaffCallService {
         staffCallTypeRepository.delete(staffCallType);
     }
 
-    public StaffCallTypeResponse staffCallTypeUpdate(Long storeId, Long callTypeId, StaffCallTypeRequest request){
+    public StaffCallTypeResponse staffCallTypeUpdate(Long storeId, Long callTypeId, StaffCallTypeRequest request) {
         // 1. 매장 존재 여부 확인
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
@@ -72,9 +74,24 @@ public class StaffCallService {
 
         // 4. 메시지 업데이트
         staffCallType.setMessage(request.getMessage());
-        
+
         // 5. 저장 및 응답 반환
         StaffCallType saved = staffCallTypeRepository.save(staffCallType);
         return mapToStaffCallTypeResponse(saved);
+    }
+
+    // 매장의 모든 직원호출 타입 조회
+    public List<StaffCallTypeResponse> getStaffCallTypes(Long storeId) {
+        // 1. 매장 존재 여부 확인
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
+
+        // 2. 해당 매장의 모든 직원호출 타입 조회
+        List<StaffCallType> staffCallTypes = staffCallTypeRepository.findByStore(store);
+
+        // 3. 응답 DTO로 변환하여 반환
+        return staffCallTypes.stream()
+                .map(this::mapToStaffCallTypeResponse)
+                .toList();
     }
 }
