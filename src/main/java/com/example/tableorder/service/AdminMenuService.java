@@ -15,6 +15,7 @@ import com.example.tableorder.repository.CategoryRepository;
 import com.example.tableorder.repository.MenuItemI18nRepository;
 import com.example.tableorder.repository.MenuOptionI18nRepository;
 import com.example.tableorder.repository.MenuOptionRepository;
+import com.example.tableorder.repository.OrderItemRepository; // 추가: active orders 체크
 import com.example.tableorder.repository.StoreRepository;
 import com.example.tableorder.util.EventBroadcaster;
 import jakarta.validation.Valid;
@@ -47,6 +48,7 @@ public class AdminMenuService {
     private final MenuOptionRepository menuOptionRepository;
     private final MenuOptionI18nRepository menuOptionI18nRepository;
     private final StoreRepository storeRepository;
+    private final OrderItemRepository orderItemRepository; // 추가: hasActiveOrders 구현
     private final EventBroadcaster eventBroadcaster;  // 브로드캐스트 스텁
 
     /**
@@ -83,6 +85,9 @@ public class AdminMenuService {
                 .enableInventory(dto.getEnableInventory() != null ? dto.getEnableInventory() : false)
                 .prepTimeMin(0)  // DTO에 없으므로 default
                 .build();
+
+        // MenuItem 먼저 저장 (ID 생성)
+        adminMenuRepository.save(menuItem);
 
         // i18n 저장
         List<MenuItemI18n> i18ns = new ArrayList<>();
@@ -124,7 +129,6 @@ public class AdminMenuService {
             }
         }
 
-        adminMenuRepository.save(menuItem);
         log.info("메뉴 등록: storeId={}, menuId={}", storeId, menuItem.getId());
 
         eventBroadcaster.publish("ws.inventory." + storeId + ".changed");
@@ -310,8 +314,7 @@ public class AdminMenuService {
     }
 
     private boolean hasActiveOrders(Long menuId) {
-        // OrderItemRepository 없으므로 스텁
-        return false;
+        return orderItemRepository.existsByMenuItemId(menuId); // 스텁 대신 실제 쿼리
     }
 
     private AdminMenuResponseDto toAdminMenuResponseDto(MenuItem menuItem) {
