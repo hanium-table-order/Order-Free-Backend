@@ -29,8 +29,7 @@ public class AdminMenuRequestDto {
     @PositiveOrZero
     private Integer price;  // int → Integer
 
-    @NotNull
-    private Map<String, String> description;
+    private Map<String, String> description; // @NotNull 제거, 선택으로
 
     private List<OptionDto> options;
 
@@ -59,6 +58,6 @@ public class AdminMenuRequestDto {
         @NotNull
         private Map<String, String> name;
 
-        private Map<String, String> description;  // 선택, but 에러 해결을 위해 추가
+        private Map<String, String> description;  // 선택
     }
 }
