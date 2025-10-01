@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class StaffCallService {
+public class StaffCallOwnerService {
 
     private final StoreRepository storeRepository;
     private final StaffCallTypeRepository staffCallTypeRepository;
@@ -41,6 +41,7 @@ public class StaffCallService {
                 .build();
     }
 
+    // 직원호출 삭제
     public void deleteStaffCallType(Long storeId, Long callTypeId) {
         // 매장 존재 여부 확인
         Store store = storeRepository.findById(storeId)
