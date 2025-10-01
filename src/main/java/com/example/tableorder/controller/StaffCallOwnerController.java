@@ -2,7 +2,7 @@ package com.example.tableorder.controller;
 
 import com.example.tableorder.dto.StaffCallTypeRequest;
 import com.example.tableorder.dto.StaffCallTypeResponse;
-import com.example.tableorder.service.StaffCallService;
+import com.example.tableorder.service.StaffCallOwnerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/stores/{storeId}")
+@RequestMapping("/api/owner/stores/{storeId}")
 @RequiredArgsConstructor
 @Tag(name = "직원 호출", description = "직원 호출 관련 API")
-public class StaffCallController {
+public class StaffCallOwnerController {
 
-    private final StaffCallService staffCallService;
+    private final StaffCallOwnerService staffCallOwnerService;
 
     @PostMapping("/staff-call-types")
     @Operation(
@@ -66,7 +66,7 @@ public class StaffCallController {
             @Valid @RequestBody StaffCallTypeRequest request) {
 
         try {
-            StaffCallTypeResponse response = staffCallService.staffCallTypeCreate(storeId, request);
+            StaffCallTypeResponse response = staffCallOwnerService.staffCallTypeCreate(storeId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -102,7 +102,7 @@ public class StaffCallController {
             @PathVariable Long storeId) {
 
         try {
-            List<StaffCallTypeResponse> response = staffCallService.getStaffCallTypes(storeId);
+            List<StaffCallTypeResponse> response = staffCallOwnerService.getStaffCallTypes(storeId);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
@@ -142,7 +142,7 @@ public class StaffCallController {
             @Valid @RequestBody StaffCallTypeRequest request) {
 
         try {
-            StaffCallTypeResponse response = staffCallService.staffCallTypeUpdate(storeId, id, request);
+            StaffCallTypeResponse response = staffCallOwnerService.staffCallTypeUpdate(storeId, id, request);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -165,7 +165,7 @@ public class StaffCallController {
             @Parameter(description = "삭제할 직원 호출 타입 ID", example = "10")
             @PathVariable Long id
     ) {
-        staffCallService.deleteStaffCallType(storeId, id);
+        staffCallOwnerService.deleteStaffCallType(storeId, id);
         return ResponseEntity.noContent().build(); // HTTP 204
     }
 
