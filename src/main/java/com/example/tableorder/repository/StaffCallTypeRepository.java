@@ -9,4 +9,6 @@ import java.util.List;
 public interface StaffCallTypeRepository extends JpaRepository<StaffCallType, Long> {
 
     List<StaffCallType> findByStore(Store store);
+
+    List<StaffCallType> findByStoreAndActiveTrue(Store store);
 }
