@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/owner/stores/{storeId}")
 @RequiredArgsConstructor
-@Tag(name = "직원 호출", description = "직원 호출 관련 API")
+@Tag(name ="직원 호출(점주)", description = "직원 호출 관련 API(점주)")
 public class StaffCallOwnerController {
 
     private final StaffCallOwnerService staffCallOwnerService;
@@ -165,8 +165,12 @@ public class StaffCallOwnerController {
             @Parameter(description = "삭제할 직원 호출 타입 ID", example = "10")
             @PathVariable Long id
     ) {
-        staffCallOwnerService.deleteStaffCallType(storeId, id);
-        return ResponseEntity.noContent().build(); // HTTP 204
+        try {
+            staffCallOwnerService.deleteStaffCallType(storeId, id);
+            return ResponseEntity.noContent().build(); // HTTP 204
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }
