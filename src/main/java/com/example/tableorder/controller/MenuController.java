@@ -71,13 +71,6 @@ public class MenuController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "조건부 메뉴 조회", description = "categoryId가 있으면 해당 카테고리만, 없으면 전체 메뉴를 조회합니다.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "메뉴 검색 성공", content = @Content(schema = @Schema(implementation = MenuResponse.class))),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @ApiResponse(responseCode = "404", description = "스토어, 테이블 또는 카테고리를 찾을 수 없음")
-    })
-    @PostMapping("/search")
     public ResponseEntity<MenuResponse> searchMenus(
             @Parameter(description = "스토어 ID", required = true, example = "1") @PathVariable Long storeId,
             @Parameter(description = "테이블 ID", required = true, example = "10") @PathVariable Long tableId,
@@ -100,6 +93,5 @@ public class MenuController {
 
         return ResponseEntity.ok(response);
     }
-
 
 }
