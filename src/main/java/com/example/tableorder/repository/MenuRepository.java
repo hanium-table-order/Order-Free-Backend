@@ -1,6 +1,7 @@
 package com.example.tableorder.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,4 +16,6 @@ public interface MenuRepository extends JpaRepository<MenuItem, Long> {
 
     // 특정 카테고리의 메뉴 조회
     List<MenuItem> findByCategoryIdAndCategoryStoreIdAndSoldOutFalseOrderByIdAsc(Long categoryId,Long storeId);
+
+    Optional<MenuItem> findByIdAndCategoryStoreId(Long id, Long storeId);
 }
