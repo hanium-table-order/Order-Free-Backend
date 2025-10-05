@@ -57,8 +57,9 @@ public class AdminOrderService {
      * @param storeId 가게 ID
      * @return List<OrderResponseDto>
      */
+    @Transactional(readOnly = true)
     public List<OrderResponseDto> listOrders(Long storeId) {
-        List<Order> orders = adminOrderRepository.findByStoreId(storeId);
+        List<Order> orders = adminOrderRepository.findByStoreIdWithItems(storeId);  // Fetch Join 쿼리 호출로 변경
         return orders.stream().map(this::toOrderResponseDto).collect(Collectors.toList());
     }
 
