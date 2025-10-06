@@ -75,15 +75,6 @@ public class CartItemService {
         return CartItemAddResponse.builder().cartItemId(cartItem.getId()).menuItemId(cartItem.getMenuItem().getId()).menuName(cartItem.getMenuName()).quantity(q).price(p).linePrice(p * q).build();
     }
 
-    private CartDetailResponse mapToCartDetailResponse(List<CartItem> cartItems) {
-
-        List<CartDetailResponse.Item> items = cartItems.stream().map(item -> CartDetailResponse.Item.builder().cartItemId(item.getId()).menuItemId(item.getMenuItem().getId()).menuName(item.getMenuName()).quantity(item.getQuantity()).price(item.getPrice()).linePrice(item.getQuantity() * item.getPrice()).build()).toList();
-
-        int total = items.stream().mapToInt(CartDetailResponse.Item::getLinePrice).sum();
-
-        return CartDetailResponse.builder().items(items).cartTotalPrice(total).build();
-    }
-
     @Transactional
     public CartDetailResponse getCart(Long storeId, Long tableId) {
         StoreTable storeTable = storeTableRepository.findByStore_IdAndId(storeId, tableId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 테이블"));
@@ -100,19 +91,23 @@ public class CartItemService {
         return mapToCartDetailResponse(cartItems);
     }
 
+    private CartDetailResponse mapToCartDetailResponse(List<CartItem> cartItems) {
+
+        List<CartDetailResponse.Item> items = cartItems.stream().map(item -> CartDetailResponse.Item.builder().cartItemId(item.getId()).menuItemId(item.getMenuItem().getId()).menuName(item.getMenuName()).quantity(item.getQuantity()).price(item.getPrice()).linePrice(item.getQuantity() * item.getPrice()).build()).toList();
+
+        int total = items.stream().mapToInt(CartDetailResponse.Item::getLinePrice).sum();
+
+        return CartDetailResponse.builder().items(items).cartTotalPrice(total).build();
+    }
+
     public void deleteCartItem(Long storeId, Long tableId, Long cartItemId) {
         // 1. 테이블 확인
         StoreTable storeTable = storeTableRepository.findByStore_IdAndId(storeId, tableId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 테이블"));
         // 2. 장바구니 조회
         Cart cart = cartRepository.findByTable(storeTable).orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다"));
         // 3. 삭제할 아이템 조회 및 검증
-        CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니 아이템"));
-        // 4. 해당 테이블의 장바구니 아이템인지 확인
-        if (!cartItem.getCart().getId().equals(cart.getId())) {
-            throw new IllegalArgumentException("권한이 없습니다");
-        }
-
-        // 5. 삭제 실행
+        CartItem cartItem = cartItemRepository.findByIdAndCartId(cartItemId,cart.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니 아이템"));
+        // 4. 삭제 실행
         cartItemRepository.delete(cartItem);
     }
 }
