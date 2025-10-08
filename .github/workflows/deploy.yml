@@ -30,10 +30,12 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
-        source: "build/libs/table-order-0.0.1-SNAPSHOT.jar"
+        source: "build/libs/*.jar"
         target: "/home/ubuntu/"
         overwrite: true   # 항상 덮어쓰기
-        options: -vvv
+
+    - name: Check generated JAR file
+      run: ls -la build/libs
 
     - name: Restart service on EC2
       uses: appleboy/ssh-action@v0.1.10
