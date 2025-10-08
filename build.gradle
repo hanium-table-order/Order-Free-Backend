@@ -1,8 +1,25 @@
+// ============== 🛠️ 최종 수정된 부분 시작 ==============
+// Gradle 빌드 스크립트 자체의 클래스패스에 라이브러리를 추가합니다.
+// 이 방식은 플러그인 설정보다 우선하며 가장 확실하게 동작합니다.
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.flywaydb:flyway-mysql:10.10.0"
+        classpath "com.mysql:mysql-connector-j:8.4.0"
+    }
+}
+// ============== 🛠️ 최종 수정된 부분 끝 ==============
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.flywaydb.flyway' version '10.10.0'
 }
+
+// 이전에 추가했던 flyway { ... } 블록은 이제 필요 없으므로 삭제했습니다.
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
@@ -19,7 +36,9 @@ configurations {
     }
 }
 
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+}
 
 dependencies {
     // 웹 서버(Tomcat) 포함
@@ -71,4 +90,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-tasks.named('test') { useJUnitPlatform() }
+tasks.named('test') {
+    useJUnitPlatform()
+}

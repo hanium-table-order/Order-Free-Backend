@@ -34,6 +34,7 @@ public class Order {
     private Integer totalPrice;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
 
     // 계산된 총액을 가져오는 메서드 (DB 필드와 별도로 계산)
