@@ -30,6 +30,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByTable_Store_IdAndTable_Id(Long storeId, Long tableId);
 
-    List<Order> findAllByTable_Store_IdAndTable_IdAndCreatedAtAfter(Long storeId, Long tableId, LocalDateTime cutoffTime);
+    @Query("""
+        SELECT DISTINCT o FROM Order o
+        LEFT JOIN FETCH o.orderItems oi
+        LEFT JOIN FETCH oi.menuItem
+        WHERE o.table.store.id = :storeId
+        AND o.table.id = :tableId
+        AND o.createdAt > :cutoffTime
+        ORDER BY o.createdAt DESC
+    """)
+    List<Order> findAllByTable_Store_IdAndTable_IdAndCreatedAtAfter(
+        @Param("storeId") Long storeId, 
+        @Param("tableId") Long tableId, 
+        @Param("cutoffTime") LocalDateTime cutoffTime
+    );
 
 }
