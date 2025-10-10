@@ -3,7 +3,6 @@ package com.example.tableorder.service;
 
 import com.example.tableorder.dto.StaffCallRequest;
 import com.example.tableorder.dto.StaffCallResponse;
-import com.example.tableorder.dto.StaffCallTypeRequest;
 import com.example.tableorder.dto.StaffCallTypeResponse;
 import com.example.tableorder.entity.staffcall.StaffCall;
 import com.example.tableorder.entity.staffcall.StaffCallType;
