@@ -27,26 +27,33 @@ jobs:
     - name: Check generated JAR file
       run: ls -la build/libs
 
-    - name: Copy JAR to EC2
+    - name: Copy JAR to EC2 build directory
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         source: "build/libs/Order-Free-Backend-0.0.1-SNAPSHOT.jar"
-        target: "/home/ubuntu/table-order-0.0.1-SNAPSHOT.jar"
+        target: "/home/ubuntu/"
         overwrite: true
-        strip_components: 2
 
-    - name: Restart service on EC2
+    - name: Deploy and restart service
       uses: appleboy/ssh-action@v0.1.10
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
+          echo "=== Copying JAR to execution location ==="
+          cp /home/ubuntu/build/libs/Order-Free-Backend-0.0.1-SNAPSHOT.jar /home/ubuntu/table-order-0.0.1-SNAPSHOT.jar
+          
+          echo "=== Verifying deployed JAR file ==="
           ls -lh /home/ubuntu/table-order-0.0.1-SNAPSHOT.jar
+          
+          echo "=== Restarting service ==="
           sudo systemctl daemon-reload
           sudo systemctl restart tableorder
           sleep 3
+          
+          echo "=== Service Status ==="
           sudo systemctl status tableorder --no-pager -n 30
