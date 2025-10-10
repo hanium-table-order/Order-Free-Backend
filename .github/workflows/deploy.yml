@@ -2,49 +2,58 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "dev" ]   # dev 브랜치에 push될 때마다 실행
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Build with Gradle
+      run: ./gradlew clean build -x test --no-build-cache
 
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test --no-build-cache
+    - name: Check generated JAR file
+      run: ls -la build/libs
 
-      - name: Check generated JAR file
-        run: ls -la build/libs
+    - name: Copy JAR to EC2 build directory
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        source: "build/libs/Order-Free-Backend-0.0.1-SNAPSHOT.jar"
+        target: "/home/ubuntu/"
+        overwrite: true
 
-      - name: Copy JAR to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: "./build/libs/Order-Free-Backend-0.0.1-SNAPSHOT.jar"
-          target: "/home/ubuntu/table-order-0.0.1-SNAPSHOT.jar"
-          overwrite: true
-
-      - name: Restart service on EC2
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            sudo systemctl daemon-reload
-            sudo systemctl restart tableorder
-            sleep 3
-            sudo systemctl status tableorder --no-pager -n 30
+    - name: Deploy and restart service
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          echo "=== Copying JAR to execution location ==="
+          cp /home/ubuntu/build/libs/Order-Free-Backend-0.0.1-SNAPSHOT.jar /home/ubuntu/table-order-0.0.1-SNAPSHOT.jar
+          
+          echo "=== Verifying deployed JAR file ==="
+          ls -lh /home/ubuntu/table-order-0.0.1-SNAPSHOT.jar
+          
+          echo "=== Restarting service ==="
+          sudo systemctl daemon-reload
+          sudo systemctl restart tableorder
+          sleep 3
+          
+          echo "=== Service Status ==="
+          sudo systemctl status tableorder --no-pager -n 30
