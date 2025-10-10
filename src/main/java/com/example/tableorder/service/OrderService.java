@@ -21,7 +21,7 @@ import com.example.tableorder.repository.OrderRepository;
 import com.example.tableorder.repository.StoreTableRepository;
 
 import lombok.RequiredArgsConstructor;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
