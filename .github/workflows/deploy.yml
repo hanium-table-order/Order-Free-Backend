@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ "dev" ]   # dev 브랜치에 push될 때마다 실행
+    branches: [ "dev" ]
 
 jobs:
   build-and-deploy:
@@ -34,9 +34,8 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         source: "build/libs/Order-Free-Backend-0.0.1-SNAPSHOT.jar"
-        target: "/home/ubuntu/table-order-0.0.1-SNAPSHOT.jar"
+        target: "/home/ubuntu/"
         overwrite: true
-        strip_components: 2
 
     - name: Restart service on EC2
       uses: appleboy/ssh-action@v0.1.10
@@ -45,7 +44,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          ls -lh /home/ubuntu/table-order-0.0.1-SNAPSHOT.jar
+          sudo mv /home/ubuntu/Order-Free-Backend-0.0.1-SNAPSHOT.jar /home/ubuntu/table-order-0.0.1-SNAPSHOT.jar
           sudo systemctl daemon-reload
           sudo systemctl restart tableorder
           sleep 3
